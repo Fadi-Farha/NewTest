@@ -1,0 +1,119 @@
+
+
+//////////
+int WHSensorValue=0;                                   //waterHumidity
+int lightSensorStatus=0;
+int motionSensorValue=0;
+int motionSensorThreshold=0;
+int touchSensorValue=0;
+int touchSensorStatus=0;
+
+int counter=0;                    // Define by me
+int previousValue=0;
+
+int touchPin =6 ;             //Gas Sensor
+int lightSensorPin=8;
+int motionSensorPin=10;
+
+int prev_lightSensorStatus=2;
+int prev_touchSensorStatus=2;
+int i=0;
+int j=0;
+
+
+void setup()
+{
+
+  Serial.begin(115200);  // pin that will fade to your heartbeat!
+ // Serial1.begin(115200);             // we agree to talk fast!
+
+  pinMode(lightSensorPin, INPUT);
+  pinMode(motionSensorPin, INPUT);
+  pinMode(touchPin, INPUT);
+}
+
+void loop()
+{
+ /////////////////////////////////////////////////////////////////////////////////////// Motion sensor
+  motionSensorValue=0; 
+  for (j=0;j<10;j++)
+  {
+    motionSensorValue+=digitalRead(motionSensorPin);
+  }
+  if (motionSensorValue>=5)
+    motionSensorValue=1;
+  else
+    motionSensorValue=0;
+ 
+ motionSensorThreshold++;
+ if (motionSensorThreshold==60)
+    allowMotionDetection=true;
+ if ((motionSensorValue==1)&&(allowMotionDetection))
+ {
+  allowMotionDetection=false;
+  motionSensorThreshold=1;
+   Serial.println(0x3f);
+   Serial.println(0x0B);/////////////////////////////equipment ID
+   Serial.println(0x01);/////////////////////////////equipment Index
+   Serial.println(motionSensorValue);////////////////////////state
+   Serial.println(0x23);
+ }
+ ///////////////////////////////////////////////////////////////////////////////////////Gas
+  touchSensorValue=0;
+  for (j=0;j<10;j++)
+  {
+    touchSensorValue+=digitalRead(touchPin);
+  }
+  if (touchSensorValue>=5)
+   touchSensorStatus=0;
+  else
+   touchSensorStatus=1;
+ if ((touchSensorStatus==1)&&(touchSensorStatus!=prev_touchSensorStatus))
+  {
+   prev_touchSensorStatus=touchSensorStatus;
+   Serial.println(0x3f);
+   Serial.println(0x04);/////////////////////////////equipment ID
+   Serial.println(0x01);/////////////////////////////equipment Index
+   Serial.println(touchSensorStatus);////////////////////////state
+   Serial.println(0x23);  
+  }
+  else if ((touchSensorStatus==0)&&(touchSensorStatus!=prev_touchSensorStatus))
+  {
+   prev_touchSensorStatus=touchSensorStatus;
+   Serial.println(0x3f);
+   Serial.println(0x04);/////////////////////////////equipment ID
+   Serial.println(0x01);/////////////////////////////equipment Index
+   Serial.println(touchSensorStatus);////////////////////////state
+   Serial.println(0x23);
+  }
+  ///////////////////////////////////////////////////////////////////////////////////////Light
+  lightSensorValue = 0;
+  for (j=0;j<10;j++)
+  {
+    lightSensorValue+=digitalRead(lightSensorPin);
+  }
+  if (lightSensorValue>=5)
+    lightSensorStatus=0;
+  else
+   lightSensorStatus=1;
+  if ((lightSensorStatus==0)&&(lightSensorStatus!=prev_lightSensorStatus))
+  {
+    prev_lightSensorStatus=lightSensorStatus;
+    Serial.println(0x3f);
+    Serial.println(0x0A);/////////////////////////////equipment ID
+    Serial.println(0x01);/////////////////////////////equipment Index
+    Serial.println(0x00);////////////////////////state
+    Serial.println(0x23);
+  }
+  else if ((lightSensorStatus==1)&&(lightSensorStatus!=prev_lightSensorStatus))
+  {
+    prev_lightSensorStatus=lightSensorStatus;
+    Serial.println(0x3f);
+    Serial.println(0x3f);
+    Serial.println(0x0A);/////////////////////////////equipment ID
+    Serial.println(0x01);/////////////////////////////equipment Index
+    Serial.println(0x01);////////////////////////state
+    Serial.println(0x23);
+  }
+    delay(1000);
+}
